@@ -4,9 +4,9 @@ import joblib
 
 app = FastAPI(title="Dyslexia Assistant API")
 
-data = joblib.load("difficulty_model.pkl")
+data = joblib.load("bert_difficulty_model.pkl")
 model = data["model"]
-feature_columns = data["features"]
+feature_columns = data["feature_count"]
 
 
 @app.get("/")
