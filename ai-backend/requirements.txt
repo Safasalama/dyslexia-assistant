@@ -1,0 +1,15 @@
+fastapi==0.115.0
+uvicorn==0.30.0
+pydantic==2.0.0
+python-dotenv==1.0.0
+numpy
+pandas
+scikit-learn
+xgboost
+sentence-transformers
+pyphen
+groq
+textstat
+tqdm
+openpyxl
+joblib

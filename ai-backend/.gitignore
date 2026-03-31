@@ -1,0 +1,43 @@
+# Virtual environment
+venv/
+.env/
+env/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# DLLs and other large binaries
+*.dll
+*.so
+*.dylib
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# Model files (large)
+*.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+
+# IDE files
+.vscode/
+.idea/
