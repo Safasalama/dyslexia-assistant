@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
+import os
 
 app = FastAPI(title="Dyslexia Assistant API")
 
-data = joblib.load("models/bert_difficulty_model.pkl")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+data = joblib.load(os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl"))
 model = data["model"]
 feature_columns = data["feature_count"]
 
@@ -16,7 +19,7 @@ def root():
 class TextInput(BaseModel):
     text: str
 
-from models.bert_scorer import score_word_bert, find_difficult_words_in_text
+from ai.models.bert_scorer import score_word_bert, find_difficult_words_in_text
 @app.post("/analyze")
 def analyze(input: TextInput):
     import string
@@ -37,7 +40,7 @@ def analyze(input: TextInput):
     }
 
 from groq import Groq
-from sevices.simplifier_groq import simplify_text
+from ai.sevices.simplifier_groq import simplify_text
 
 groq_client = Groq(api_key=("GROQ_API_KEY"))
 
