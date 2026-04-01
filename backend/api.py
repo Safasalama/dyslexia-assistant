@@ -2,12 +2,15 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
 import os
+import sys
 
 app = FastAPI(title="Dyslexia Assistant API")
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # points to dyslexia assistant/
+sys.path.append(BASE_DIR)
+model_path = os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl")
 
-data = joblib.load(os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl"))
+data = joblib.load(model_path)
 model = data["model"]
 feature_columns = data["feature_count"]
 

@@ -3,16 +3,26 @@ import numpy as np
 import pandas as pd
 import pyphen
 import joblib
+import os
 from sentence_transformers import SentenceTransformer
 
+# Get the root directory of the project
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Build the absolute path to the model
+model_path = os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl")
+
+# Load the model
+data = joblib.load(model_path)
 # Load model and embedder once at startup
-data     = joblib.load('models/bert_difficulty_model.pkl')
 model    = data['model']
 embedder = SentenceTransformer('paraphrase-MiniLM-L3-v2')
 dic      = pyphen.Pyphen(lang='en')
 
-subtlex_df = pd.read_csv('data/SUBTLEX-US frequency list with PoS and Zipf information.csv')
-aoa_df = pd.read_excel('data/AoA_51715_words.xlsx')
+csv_path = os.path.join(BASE_DIR, "ai", "data", "SUBTLEX-US frequency list with PoS and Zipf information.csv")
+subtlex_df = pd.read_csv(csv_path)
+excel_path = os.path.join(BASE_DIR, "ai", "data", "AoA_51715_words.xlsx")
+aoa_df = pd.read_excel(excel_path)
 nphon_lookup  = aoa_df.set_index('Word')['Nphon'].to_dict()
 freq_lookup   = aoa_df.set_index('Word')['Freq_pm'].to_dict()
 pos_lookup = subtlex_df.set_index('Word')['Dom_PoS_SUBTLEX'].to_dict()
