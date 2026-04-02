@@ -1,5 +1,8 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
+
 import joblib
 import os
 import sys
@@ -13,6 +16,15 @@ model_path = os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl")
 data = joblib.load(model_path)
 model = data["model"]
 feature_columns = data["feature_count"]
+
+# Add CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
