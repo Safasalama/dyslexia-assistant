@@ -4,10 +4,11 @@ const themes = {
     "--card-bg-color": "#F7F2EA",
     "--text-color": "#3A3530",
     "--title-color": "#3A2E25",
+    "--secondary-text": "#5A4535",
     "--nav-color": "#3A2E25",
     "--nav-text-color": "#F2EDE4",
-    "--accent-color":"#b65243",
-    "--input-bg-color": "#F5F0EB",
+    "--accent-color": "#b65243",
+    "--input-bg-color": "#ec715d26",
     "--btn-hover-color": "#a04835",
     "--success-color": "#28a745",
     "img": "./imgs/home-classic-theme.png"
@@ -17,9 +18,10 @@ const themes = {
     "--card-bg-color": "#2A1A20",
     "--text-color": "#e6e6e9",
     "--title-color": "#f2f4f5",
+ "--secondary-text": "#a89bb0",
     "--nav-color": "#1A1015",
     "--nav-text-color": "#f2f4f5",
-    "--accent-color":"#b0bec5",
+    "--accent-color": "#b0bec5",
     "--input-bg-color": "#2b1a25",
     "--btn-hover-color": "#493a49",
     "--success-color": "#64b5f6",
@@ -31,8 +33,9 @@ const themes = {
     "--text-color": "#394b64",
     "--title-color": "rgb(21, 19, 37)",
     "--nav-color": "#394b64",
+"--secondary-text": "#6b7f99",
     "--nav-text-color": "#F5EFE6",
-    "--accent-color":"#79acd0",
+    "--accent-color": "#79acd0",
     "--input-bg-color": "#f2faff",
     "--btn-hover-color": "#5a8ba8",
     "--success-color": "#81c784",
@@ -138,7 +141,7 @@ async function sendTextToAI(actionType) {
   try {
     let data;
 
-    switch(actionType) {
+    switch (actionType) {
       case "analyze":
         data = await analyzeText(text);
         break;
@@ -157,6 +160,8 @@ async function sendTextToAI(actionType) {
     document.getElementById("loadingSpinner").style.display = "none";
 
     showResult(data, actionType);
+    document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth" });
+
 
   } catch (error) {
     document.getElementById("loadingSpinner").style.display = "none";
@@ -169,16 +174,14 @@ function showResult(data, actionType) {
 
   // Show additional buttons after successful processing
   if (actionType === "process") {
-    document.getElementById("analyzeBtn").style.display = "inline-block";
-    document.getElementById("simplifyBtn").style.display = "inline-block";
-  }
+    document.getElementById("extraBtns").style.display = "flex";
+}
 
   let resultHTML = "";
 
-  switch(actionType) {
+  switch (actionType) {
     case "analyze":
       resultHTML = `
-        <h5 class="mb-3"><i class="fa-solid fa-search me-2"></i>Text Analysis Results</h5>
         <div class="mb-3">
           <strong>Overall Difficulty Score:</strong> ${data.overall_difficulty}/10
         </div>
@@ -186,18 +189,18 @@ function showResult(data, actionType) {
           <strong>Hardest Words:</strong>
           <div class="mt-2">
             ${data.hardest_words.length > 0 ?
-              data.hardest_words.map(word => `<span class="badge bg-warning text-dark me-1">${word}</span>`).join('') :
-              '<span class="text-muted">No difficult words found</span>'}
+          data.hardest_words.map(word => `<span class="badge bg-warning text-dark me-1">${word}</span>`).join('') :
+          '<span class="text-muted">No difficult words found</span>'}
           </div>
         </div>
         <div class="mb-3">
           <strong>Word-by-Word Analysis:</strong>
           <div class="mt-2">
             ${Object.entries(data.words).map(([word, score]) =>
-              `<span class="badge bg-secondary me-1 mb-1" title="Score: ${score.difficulty_score}">
+            `<span class="badge bg-secondary me-1 mb-1" title="Score: ${score.difficulty_score}">
                 ${word} (${score.difficulty_score})
               </span>`
-            ).join('')}
+          ).join('')}
           </div>
         </div>
       `;
@@ -205,11 +208,6 @@ function showResult(data, actionType) {
 
     case "simplify":
       resultHTML = `
-        <h5 class="mb-3"><i class="fa-solid fa-magic me-2"></i>Simplified Text</h5>
-        <div class="mb-3">
-          <strong>Original Text:</strong>
-          <p class="mt-2 p-2 bg-light rounded">${data.original || "N/A"}</p>
-        </div>
         <div class="mb-3">
           <strong>Simplified Text:</strong>
           <p class="mt-2 p-2 bg-success text-white rounded">${data.simplified}</p>
@@ -223,44 +221,70 @@ function showResult(data, actionType) {
 
     case "process":
       resultHTML = `
-        <h5 class="mb-3"><i class="fa-solid fa-play me-2"></i>Complete Processing Results</h5>
-
-        <div class="row">
-          <div class="col-md-6">
-            <h6>Original Text Analysis</h6>
-            <p><strong>Difficulty:</strong> ${data.original_analysis.overall_difficulty}/10</p>
-            <p><strong>Hard Words:</strong> ${data.original_analysis.hardest_words.join(", ") || "None"}</p>
+    <h5 class="mb-3"> Processing Results</h5>
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="p-3 rounded" style="border: 2px solid var(--border-color)">
+          <h6>Original</h6>
+          <p class="mb-1"><strong>Difficulty:</strong> ${data.original_analysis.overall_difficulty}/10</p>
+          <div class="difficulty-bar mb-2">
+            <div style="width:${data.original_analysis.overall_difficulty * 10}%; height:8px; background:var(--accent-color); border-radius:4px;"></div>
           </div>
-          <div class="col-md-6">
-            <h6>Simplified Text Analysis</h6>
-            <p><strong>Difficulty:</strong> ${data.simplified_analysis.overall_difficulty}/10</p>
-            <p><strong>Hard Words:</strong> ${data.simplified_analysis.hardest_words.join(", ") || "None"}</p>
+          <p class="mb-0"><strong>Hard Words:</strong> ${data.original_analysis.hardest_words.map(w => `<span class="badge bg-warning text-dark">${w}</span>`).join(' ') || 'None'}</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 rounded" style="border: 2px solid var(--success-color)">
+          <h6>Simplified</h6>
+          <p class="mb-1"><strong>Difficulty:</strong> ${data.simplified_analysis.overall_difficulty}/10</p>
+          <div class="difficulty-bar mb-2">
+            <div style="width:${data.simplified_analysis.overall_difficulty * 10}%; height:8px; background:var(--success-color); border-radius:4px;"></div>
           </div>
+          <p class="mb-0"><strong>Hard Words:</strong> ${data.simplified_analysis.hardest_words.map(w => `<span class="badge bg-warning text-dark">${w}</span>`).join(' ') || 'None'}</p>
         </div>
-
-        <hr>
-
-        <div class="mb-3">
-          <strong>Simplified Text:</strong>
-          <p class="mt-2 p-3 bg-success text-white rounded">${data.simplified}</p>
-        </div>
-
-        <div class="mb-3">
-          <strong>Readability Improvement:</strong> ${data.flesch_improvement}
-        </div>
-      `;
+      </div>
+    </div>
+    <div class="mb-3 p-3 rounded" style="background:var(--input-bg-color)">
+      <strong>Simplified Text:</strong>
+      <p class="mt-2 mb-0" style="line-height:1.9">${data.simplified}</p>
+    </div>
+    <div class="text-center p-2 rounded" style="background:var(--card-bg-color)">
+      <strong>Readability Improvement:</strong> ${data.flesch_improvement}
+    </div>
+  `;
       break;
   }
 
   document.getElementById("resultContent").innerHTML = resultHTML;
 }
+//audio button
+document.getElementById("volumeCheckbox").addEventListener("change", function() {
+    const resultContent = document.getElementById("resultContent");
+    if (this.checked) {
+        const text = resultContent.innerText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.85;
+        speechSynthesis.speak(utterance);
+    } else {
+        speechSynthesis.cancel(); 
+    }
+});
+//download button 
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const content = document.getElementById("resultContent").innerText;
+  const blob = new Blob([content], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "dyslexia-result.txt";
+  a.click();
+});
 //show of sparkle effect on the get started button
 const btn = document.querySelector('.footer-btn');
 let lastSparkle = 0;
 
 btn.addEventListener('mousemove', (e) => {
   const now = Date.now();
-  if (now - lastSparkle < 300) return; 
+  if (now - lastSparkle < 300) return;
   lastSparkle = now;
 
   const sparkle = document.createElement('span');
@@ -269,7 +293,7 @@ btn.addEventListener('mousemove', (e) => {
 
   const rect = btn.getBoundingClientRect();
   sparkle.style.left = (e.clientX - rect.left + Math.random() * 20 - 10) + 'px';
-  sparkle.style.top  = (e.clientY - rect.top  + Math.random() * 20 - 10) + 'px';
+  sparkle.style.top = (e.clientY - rect.top + Math.random() * 20 - 10) + 'px';
 
   btn.appendChild(sparkle);
   setTimeout(() => sparkle.remove(), 1000);

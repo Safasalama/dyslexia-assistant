@@ -20,6 +20,10 @@ section:not(#About):last-child {
   border-bottom: none;
   margin-bottom: 0;
 }
+/* Container Spacing */
+.container {
+  padding: 0 20px;
+}
 
 /* Paragraphs */
 p {
@@ -107,7 +111,7 @@ h2 {
   padding-bottom: 0.5rem;
   text-align: start;
 }
-
+/*
 h2::after {
   content: "";
   display: flex;
@@ -121,7 +125,7 @@ h2::after {
   left: 50%;
   transform: translateX(-50%);
 }
-
+*/
 h3 {
   font-size: 1.5rem;
   margin-bottom: 22px;
@@ -264,7 +268,7 @@ nav {
 
 /* Form Elements for reading section */
 .form-control, textarea {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.8;
   letter-spacing: 0.05em;
   padding: 12px 15px;
@@ -356,13 +360,113 @@ nav {
   border-color: var(--success-color);
   color: white;
 }
-
-
-/* Container Spacing */
-.container {
-  padding: 0 20px;
+/* Volume Button */
+.volume {
+  width: 50px;
+  height: 50px;
+  border-radius: 100%;
+  background-color: var(--card-bg-color);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);
+  transition-duration: .3s;
+  cursor: pointer;
+}
+.volume-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+  overflow: hidden;
+  position: relative;
+}
+.volume-svg {
+  z-index: 2;
+  color: var(--accent-color);
+  height: 20px;
+  width: 20px;
+}
+.volume-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;  
+  cursor: pointer;
+  z-index: 999;
+}
+.volume-icon:before {
+  background-color: var(--accent-color);
+  content: "";
+  display: flex;
+  width: 0px;
+  height: 0px;
+  border-radius: 100%;
+  transition: all 0.2s ease;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
+.volume:hover {
+  background-color: var(--accent-color);
+}
+
+.volume:hover .volume-svg {
+  color: white;
+}
+.volume-input:checked + .volume-icon:before {
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+}
+.volume-input:checked + .volume-icon svg {
+  color: white;
+}
+/*download button*/
+.Btn {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--card-bg-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition-duration: .3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);
+}
+
+.svgIcon {
+  fill: var(--accent-color);
+}
+
+.icon2 {
+  width: 18px;
+  height: 5px;
+  border-bottom: 2px solid var(--accent-color);
+  border-left: 2px solid var(--accent-color);
+  border-right: 2px solid var(--accent-color);
+}
+
+.Btn:hover {
+  background-color: var(--accent-color);
+  transition-duration: .3s;
+}
+
+.Btn:hover .icon2 {
+  border-bottom: 2px solid white;
+  border-left: 2px solid white;
+  border-right: 2px solid white;
+}
+
+.Btn:hover .svgIcon {
+  fill: white;
+  animation: slide-in-top 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
 /* Card Enhancement */
 .results-section {
   border: 2px solid var(--border-color);
@@ -381,6 +485,16 @@ nav {
   width: 3rem;
   height: 3rem;
   border-width: 4px;
+  color: var(--accent-color);
+}
+:focus-visible {
+  outline: 3px solid var(--accent-color) !important;
+  outline-offset: 3px;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(182, 82, 67, 0.3);
 }
 /* Footer hero */
 .footer-hero {

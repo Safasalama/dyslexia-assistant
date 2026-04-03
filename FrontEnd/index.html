@@ -86,52 +86,74 @@
 
         <section id="Read" class="reveal py-5">
             <div class="container">
-                <h2 class="text-center mb-5 fs-3">Your Reading Assistant</h2>
+                <div class="main-heading text-center mb-5">
+                    <h2 class="fs-2 mb-2">Your Reading Assistant</h2>
+                    <span class="" style="color:var(--secondary-text)">Less struggle. More understanding</span>
+                </div>
+
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <!-- Input Section -->
                         <div class="input-section mb-4">
-                            <label for="textInput" class="form-label fs-5 fw-bold mb-3">Enter Your Text</label>
-                            <textarea class="form-control" id="textInput" rows="6"
+                            <textarea class="form-control" id="textInput" rows="4"
                                 placeholder="Paste or type the text you want to read..."></textarea>
 
                             <div class="mt-4 d-flex gap-2 justify-content-center">
-                                <button class="btn btn-outline-secondary btn-lg" id="analyzeBtn" style="display: none;">
-                                    <i class="fa-solid fa-search me-2"></i>Analyze 
-                                </button>
-                                <button class="btn btn-outline-info btn-lg" id="simplifyBtn" style="display: none;">
-                                    <i class="fa-solid fa-magic me-2"></i>Simplify 
-                                </button>
                                 <button class="btn btn-primary btn-lg" id="submitBtn">
                                     <i class="fa-solid fa-play me-2"></i>Process Text
                                 </button>
                             </div>
                         </div>
-
-                        
-                        <div class="results-section mt-5 p-4 border rounded" id="resultsSection" style="display: none;">
-                            <h4 class="mb-4 fs-5">Processed Text</h4>
-                            <div class="result-content p-3 bg-light rounded" id="resultContent">
-                            </div>
-                            
-                            <div class="mt-4 d-flex gap-2">
-                                <button class="btn btn-outline-primary" id="playAudioBtn">
-                                    <i class="fa-solid fa-volume-high me-2"></i>Play Audio
-                                </button>
-                                <button class="btn btn-outline-success" id="downloadBtn">
-                                    <i class="fa-solid fa-download me-2"></i>Download
-                                </button>
-                            </div>
-                        </div>
-                        
-
                         <!-- Loading Spinner -->
                         <div class="text-center mt-5" id="loadingSpinner" style="display: none;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                            <div class="spinner-border " role="status">
                             </div>
-                            <p class="mt-3">Processing your text...</p>
                         </div>
+
+                        <div class="results-section mt-5 p-4 border rounded" id="resultsSection" style="display: none;">
+                            <h4 class="mb-4 fs-5"><i class="fa-solid fa-square-poll-vertical"
+                                    style="color: var(--accent-color);"></i>Result:
+                            </h4>
+                            <div class="result-content p-3 " id="resultContent"></div>
+                            <div class="mt-4 d-flex gap-2 align-items-center justify-content-center">
+                                <div class="volume" id="playAudioBtn" title="Play Audio">
+                                    <input type="checkbox" class="volume-input" id="volumeCheckbox" />
+                                    <div class="volume-icon">
+                                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                            class="volume-svg">
+                                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <button class="Btn" id="downloadBtn">
+                                    <svg class="svgIcon" viewBox="0 0 384 512" height="1em"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z">
+                                        </path>
+                                    </svg>
+                                    <span class="icon2"></span>
+                                    <span class="tooltip">Download</span>
+                                </button>
+                            </div>
+                            <div class="mt-4 d-flex gap-2 justify-content-center" id="extraBtns"
+                                style="display:none !important">
+                                <button class="btn btn-primary" id="analyzeBtn">
+                                    <i class="fa-solid fa-search me-2"></i>Analyze 
+                                </button>
+                                <button class="btn btn-primary" id="simplifyBtn">
+                                    <i class="fa-solid fa-magic me-2"></i>Simplify 
+                                </button>
+                            </div>
+
+                        
+                        </div>
+
+
+
 
 
                     </div>
@@ -147,9 +169,9 @@
             </button>
         </div>
 
-    
-                <!-- Features -->
-                <!--
+
+        <!-- Features -->
+        <!--
        <div class="col-md-4 mb-3">
         <h5>Features</h5>
         <ul class="list-unstyled">
@@ -161,12 +183,12 @@
       </div>
       -->
 
-            <!-- Bottom -->
-            <div class="text-center">
-                <p class="mb-0">
-                    © 2026 All rights reserved | Made with ❤️ by our team
-                </p>
-            </div>
+        <!-- Bottom -->
+        <div class="text-center">
+            <p class="mb-0">
+                © 2026 All rights reserved | Made with ❤️ by our team
+            </p>
+        </div>
         </div>
     </footer>
     <script src="./js/bootstrap.bundle.min.js"></script>
