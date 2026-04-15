@@ -27,6 +27,29 @@ nphon_lookup  = aoa_df.set_index('Word')['Nphon'].to_dict()
 freq_lookup   = aoa_df.set_index('Word')['Freq_pm'].to_dict()
 pos_lookup = subtlex_df.set_index('Word')['Dom_PoS_SUBTLEX'].to_dict()
 
+STOP_WORDS = {
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'of', 'with', 'by', 'from', 'is', 'was', 'are', 'were', 'be', 'been',
+    'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+    'could', 'should', 'may', 'might', 'shall', 'can', 'need', 'dare',
+    'this', 'that', 'these', 'those', 'it', 'its', 'they', 'them', 'their',
+    'he', 'she', 'we', 'you', 'i', 'my', 'your', 'his', 'her', 'our',
+    'not', 'no', 'nor', 'so', 'yet', 'both', 'either', 'neither',
+    'as', 'if', 'then', 'than', 'when', 'while', 'although', 'because',
+    'into', 'onto', 'upon', 'about', 'above', 'below', 'between', 'through'
+}
+
+def should_skip_word(word):
+    """Return True if word should be excluded from scoring"""
+    if len(word) <= 2:
+        return True
+    if word.lower() in STOP_WORDS:
+        return True
+    # Skip words that are purely numbers or symbols, but allow apostrophes and hyphens
+    if not re.match(r"^[a-zA-Z][a-zA-Z'\-]*[a-zA-Z]$", word):
+        return True
+    return False
+
 pos_map = {
     'Noun': 1, 'Verb': 2, 'Adjective': 3, 'Adverb': 4,
     'Preposition': 5, 'Conjunction': 6, 'Pronoun': 7,
@@ -98,6 +121,10 @@ def score_word_bert(word):
         reasons.append("Irregular spelling")
     if clusters >= 2:
         reasons.append(f"{clusters} consonant clusters")
+    if aoa_predicted >= 10.0 and not reasons:
+        reasons.append("Rarely encountered word")
+    if freq_pm < 5.0:
+        reasons.append("Uncommon in everyday reading")
 
     
     return {
@@ -118,27 +145,40 @@ def score_word_bert(word):
 def find_difficult_words_in_text(text, threshold=5.0):
     """
     Find all difficult words in text above threshold
-    
-    Args:
-        text: Text to analyze
-        threshold: Difficulty score threshold (default 5.0)
-    
-    Returns:
-        List of difficult words with scores
+    Also returns document frequency (how many times each word appears).
     """
-    words = re.findall(r'\b[a-zA-Z]+\b', text)
-    difficult_words = []
+    all_words = re.findall(r'\b[a-zA-Z]+\b', text)
 
-    for word in set(words):
-        if len(word) <= 2:
+    word_freq = {}
+    for word in all_words:
+        key = word.lower()
+        if not should_skip_word(word):
+            word_freq[key] = word_freq.get(key, 0)+1
+
+    all_scored = []
+    difficult_words = []
+    seen = set()
+
+    for word in all_words:
+        word_lower = word.lower()
+        if word_lower in seen:
             continue
+        if should_skip_word(word):
+            continue
+        seen.add(word_lower)
+
         result = score_word_bert(word)
+        result['frequency_in_text'] = word_freq.get(word_lower, 1)
+        all_scored.append(result)
+
         if result['difficulty_score'] >= threshold:
             difficult_words.append(result)
 
     difficult_words.sort(key=lambda x: x['difficulty_score'], reverse=True)
-    return difficult_words
-        
+    return {
+        'all_scored': all_scored,
+        'difficult_words': difficult_words
+    }        
 
 print(score_word_bert("the"))
 print(score_word_bert("cat"))

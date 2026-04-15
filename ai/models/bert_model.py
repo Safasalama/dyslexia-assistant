@@ -1,10 +1,26 @@
 import numpy as np
 import pandas as pd 
+import os
 
-embeddings = np.load('word_embeddings_small.npy')  # was word_embeddings.npy
+import os
+import numpy as np
+import pandas as pd
 
-subtlex = pd.read_csv('SUBTLEX-US frequency list with PoS and Zipf information.csv')
-aoa     = pd.read_excel('AoA_51715_words.xlsx')
+# Base paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))          # ai/models
+AI_DIR   = os.path.dirname(BASE_DIR)                           # ai
+DATA_DIR = os.path.join(AI_DIR, 'data')                        # ai/data
+
+# Files
+embeddings_path = os.path.join(BASE_DIR, 'word_embeddings_small.npy')
+subtlex_path    = os.path.join(DATA_DIR, 'SUBTLEX-US frequency list with PoS and Zipf information.csv')
+aoa_path        = os.path.join(DATA_DIR, 'AoA_51715_words.xlsx')
+
+# Load
+embeddings = np.load(embeddings_path)
+subtlex    = pd.read_csv(subtlex_path)
+aoa        = pd.read_excel(aoa_path)
+
 df = subtlex.merge(aoa[['Word', 'AoA_Kup', 'Nphon', 'Freq_pm']], on='Word', how='inner')
 df['Nphon'] = df['Nphon'].fillna(df['Nphon'].mean())
 df['Freq_pm'] = df['Freq_pm'].fillna(df['Freq_pm'].mean())
