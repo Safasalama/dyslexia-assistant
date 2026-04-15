@@ -11,6 +11,7 @@ const themes = {
     "--input-bg-color": "#ec715d26",
     "--btn-hover-color": "#a04835",
     "--success-color": "#28a745",
+     "--footer-overlay":      "rgb(58 46 37 / 51%)",
     "img": "./imgs/home-classic-theme.png"
   },
   "Dark reading mode": {
@@ -25,6 +26,8 @@ const themes = {
     "--input-bg-color": "#2b1a25",
     "--btn-hover-color": "#493a49",
     "--success-color": "#64b5f6",
+      "--footer-overlay":      "rgba(26, 16, 21, 0.55)",
+
     "img": "./imgs/home-dark-theme.png"
   },
   "Soft pastel": {
@@ -39,6 +42,8 @@ const themes = {
     "--input-bg-color": "#f2faff",
     "--btn-hover-color": "#5a8ba8",
     "--success-color": "#81c784",
+      "--footer-overlay":      "rgba(57, 75, 100, 0.35)",
+
     "img": "./imgs/home-pastel-theme.png"
   }
 };
@@ -68,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => changeTheme(btn.dataset.theme));
   });
 });
+
 //show of all sections
 const reveals = document.querySelectorAll(".reveal");
 
@@ -82,8 +88,73 @@ window.addEventListener("scroll", () => {
     }
   });
 });
-//connect process text button to ai 
+//navbar
+const navbar = document.querySelector('.navbar');
+const aboutSection = document.getElementById('About');
 
+window.addEventListener('scroll', () => {
+  const aboutBottom = aboutSection.getBoundingClientRect().bottom;
+  
+  if (aboutBottom > 0) {
+    navbar.style.opacity = '1';
+    navbar.style.pointerEvents = 'auto';
+  } else {
+    navbar.style.opacity = '0';
+    navbar.style.pointerEvents = 'none';
+  }
+});
+
+navbar.style.transition = 'opacity 0.3s ease';
+
+
+// ── Font Size Control ──//
+const fontSizes = [14, 16, 18, 20, 22];
+let currentFontIndex = 1; 
+
+const savedFontIndex = localStorage.getItem('fontIndex');
+if (savedFontIndex) {
+  currentFontIndex = parseInt(savedFontIndex);
+  document.body.style.fontSize = fontSizes[currentFontIndex] + 'px';
+}
+
+document.getElementById('fontIncrease').addEventListener('click', () => {
+  if (currentFontIndex < fontSizes.length - 1) {
+    currentFontIndex++;
+    document.body.style.fontSize = fontSizes[currentFontIndex] + 'px';
+    localStorage.setItem('fontIndex', currentFontIndex);
+  }
+});
+
+document.getElementById('fontDecrease').addEventListener('click', () => {
+  if (currentFontIndex > 0) {
+    currentFontIndex--;
+    document.body.style.fontSize = fontSizes[currentFontIndex] + 'px';
+    localStorage.setItem('fontIndex', currentFontIndex);
+  }
+});
+// ── Step Cards Animation ──//
+const stepCards = document.querySelectorAll('.step-card');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.2 });
+
+stepCards.forEach((card, index) => {
+  card.style.transitionDelay = `${index * 0.20}s`; 
+  observer.observe(card);
+});
+// ── Tips Animation ──//
+
+const tipCards = document.querySelectorAll('.tip-card');
+
+tipCards.forEach((card, index) => {
+  card.style.transitionDelay = `${index * 0.15}s`;
+  observer.observe(card);
+});
 // API Configuration
 const API_BASE_URL = "http://127.0.0.1:8000";
 
