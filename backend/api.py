@@ -81,13 +81,15 @@ def analyze(input: TextInput):
     
 
 from groq import Groq
-from ai.sevices.simplifier_groq import simplify_text, simplify_sentence_level
+from ai.sevices.simplifier_groq import simplify_text, simplify_sentence_level, simplify_targeted
 
 groq_client = Groq(api_key=("GROQ_API_KEY"))
 
 @app.post("/simplify")
-def simplify(input: TextInput, mode: str = "sentence"):
-    if mode == "sentence":
+def simplify(input: TextInput, mode: str = "targeted"):
+    if mode == "targeted":
+        result = simplify_targeted(input.text)
+    elif mode == "sentence":
         result = simplify_sentence_level(input.text)
     else:
         result = simplify_text(input.text)
@@ -98,17 +100,17 @@ def process(input: TextInput, user_view: bool = False):
     # step 1 — analyze original
     original_analysis = analyze(input)
 
-    # step 2 — simplify using ranked candidate pipeline
-    simplified = simplify_text(input.text)
+    # step 3 — simplify with hard words injected into prompt
+    simplified = simplify_targeted(input.text)
     if not simplified.get('success'):
         return {"error": simplified.get('error'), "success": False}
 
     simplified_text = simplified['simplified']
 
-    # step 3 — analyze simplified
+    # step 4 — analyze simplified
     simplified_analysis = analyze(TextInput(text=simplified_text))
 
-    # step 4 — compute the diff
+    # step 5 — compute the diff
     original_hard   = {w['word']: w for w in original_analysis['hard_words']}
     simplified_hard = {w['word']: w for w in simplified_analysis['hard_words']}
 
@@ -133,13 +135,13 @@ def process(input: TextInput, user_view: bool = False):
         if word not in original_hard
     ]
 
-    # step 5 — verdict
+    # step 6 — verdict
     original_density   = float(original_analysis['summary']['hard_word_density'].replace('%', ''))
     simplified_density = float(simplified_analysis['summary']['hard_word_density'].replace('%', ''))
     density_reduction  = round(original_density - simplified_density, 1)
 
     original_diff  = simplified['reranking']['original_difficulty']
-    final_diff     = simplified['reranking']['best_difficulty']
+    final_diff     = simplified['reranking']['final_difficulty']
     diff_reduction = round(original_diff - final_diff, 3)
 
     if diff_reduction >= 1.5 and density_reduction >= 20:
@@ -153,7 +155,7 @@ def process(input: TextInput, user_view: bool = False):
     else:
         verdict = "Minimal — text was already near its simplest form"
 
-    # step 6 — user view
+    # step 7 — user view
     if user_view:
         before_level = original_analysis['summary']['reading_level']
         after_level  = simplified_analysis['summary']['reading_level']
@@ -186,7 +188,7 @@ def process(input: TextInput, user_view: bool = False):
             "words_to_watch":      words_to_watch
         }
 
-    # step 7 — full technical response for developers
+    # step 8 — full technical response for developers
     return {
         "original":   input.text,
         "simplified": simplified_text,
@@ -199,8 +201,7 @@ def process(input: TextInput, user_view: bool = False):
             "density_reduction":     f"{density_reduction}%",
             "difficulty_reduction":  diff_reduction,
             "flesch_improvement":    round(simplified['improvement'], 1),
-            "semantic_similarity":   simplified['reranking']['best_similarity'],
-            "winning_strategy":      simplified['reranking']['best_temperature'],
+            "winning_strategy": "targeted",
         },
 
         "diff": {

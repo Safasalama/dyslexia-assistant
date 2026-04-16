@@ -95,7 +95,7 @@ def generate_candidate(text, temperature, system_prompt):
     return response.choices[0].message.content.strip()
 
 
-def simplify_text(text, sim_threshold=0.75, n_candidates=5):
+def simplify_text(text, sim_threshold=0.75, n_candidates=5, hard_words= None):
     """
     Drop-in replacement for the original simplify_text().
     Returns the same dict structure — api.py needs zero changes.
@@ -112,6 +112,10 @@ def simplify_text(text, sim_threshold=0.75, n_candidates=5):
         for i, temp in enumerate(CANDIDATE_TEMPERATURES[:n_candidates]):
             try:
                 prompt = SYSTEM_PROMPTS[i % len(SYSTEM_PROMPTS)]
+                if hard_words and len(hard_words) > 0:
+                    must_replace  = ', '.join(hard_words)
+                    prompt = prompt + f"\n\nCRITICAL: You MUST replace ALL of these specific words with simpler alternatives: {must_replace}\nDo not use any of these words in your output under any circumstances."
+
                 output = generate_candidate(text, temp, prompt)
         
                 # skip if model returned input unchanged
@@ -340,6 +344,117 @@ def simplify_sentence_level(text, sim_threshold=0.75):
             "difficulty_reduction":  round(original_diff - final_diff, 3),
         },
         "sentence_details": sentence_details
+    }
+
+def simplify_targeted(text, difficulty_threshold=3.5, sim_threshold=0.65):
+    """
+    Only simplify sentences that are actually hard.
+    Easy sentences pass through untouched.
+    """
+    sentences = split_sentences(text)
+    
+    result_sentences = []
+    details = []
+    api_calls_made = 0
+
+    for sentence in sentences:
+        words = sentence.split()
+        
+        # Too short — keep as is
+        if len(words) < 5:
+            result_sentences.append(sentence)
+            details.append({
+                'original':   sentence,
+                'simplified': sentence,
+                'action':     'kept_unchanged',
+                'reason':     'too short'
+            })
+            continue
+
+        # Score this sentence
+        sentence_difficulty = score_difficulty(sentence)
+
+        # Easy sentence — keep as is, don't touch it
+        if sentence_difficulty < difficulty_threshold:
+            result_sentences.append(sentence)
+            details.append({
+                'original':   sentence,
+                'simplified': sentence,
+                'action':     'kept_unchanged',
+                'reason':     'already easy',
+                'difficulty': round(sentence_difficulty, 3)
+            })
+            continue
+
+        # Hard sentence — find which specific words are causing it
+        hard_word_results = find_difficult_words_in_text(sentence, threshold=6.0)
+        hard_words = [w['word'] for w in hard_word_results['difficult_words']]
+
+        # Simplify only this sentence, with hard words injected into prompt
+        simplified_result = simplify_text(
+            sentence,
+            sim_threshold=sim_threshold,
+            hard_words=hard_words
+        )
+        api_calls_made += 5  # track cost
+
+        if simplified_result.get('success'):
+            simplified_sentence = simplified_result['simplified']
+            final_difficulty    = simplified_result['reranking']['best_difficulty']
+
+            result_sentences.append(simplified_sentence)
+            details.append({
+                'original':            sentence,
+                'simplified':          simplified_sentence,
+                'action':              'simplified',
+                'original_difficulty': round(sentence_difficulty, 3),
+                'final_difficulty':    round(final_difficulty, 3),
+                'reduction':           round(sentence_difficulty - final_difficulty, 3),
+                'hard_words_targeted': hard_words,
+                'winning_temp':        simplified_result['reranking']['best_temperature'],
+                'winning_strategy':    simplified_result['reranking']['best_temperature'],
+            })
+        else:
+            # Simplification failed — keep original, don't break the output
+            result_sentences.append(sentence)
+            details.append({
+                'original':   sentence,
+                'simplified': sentence,
+                'action':     'kept_unchanged',
+                'reason':     'simplification failed',
+                'difficulty': round(sentence_difficulty, 3)
+            })
+
+    # Assemble final text — only the hard sentences were rewritten
+    final_text = ' '.join(result_sentences)
+
+    # Compute overall metrics
+    original_flesch   = textstat.flesch_reading_ease(text)
+    simplified_flesch = textstat.flesch_reading_ease(final_text)
+    original_diff     = score_difficulty(text)
+    final_diff        = score_difficulty(final_text)
+
+    sentences_simplified = sum(1 for d in details if d['action'] == 'simplified')
+    sentences_kept       = len(details) - sentences_simplified
+
+    return {
+        "original":          text,
+        "simplified":        final_text,
+        "original_flesch":   original_flesch,
+        "simplified_flesch": simplified_flesch,
+        "improvement":       round(simplified_flesch - original_flesch, 2),
+        "success":           True,
+        "reranking": {
+            "mode":                  "targeted",
+            "total_sentences":       len(sentences),
+            "sentences_simplified":  sentences_simplified,
+            "sentences_kept":        sentences_kept,
+            "api_calls_made":        api_calls_made,
+            "original_difficulty":   round(original_diff, 3),
+            "final_difficulty":      round(final_diff, 3),
+            "difficulty_reduction":  round(original_diff - final_diff, 3),
+        },
+        "sentence_details": details
     }
 
 if __name__ == "__main__":

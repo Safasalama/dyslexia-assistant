@@ -74,6 +74,19 @@ def count_consonant_clusters(word):
         return 0
     return len(re.findall(r'[bcdfghjklmnpqrstvwxyz]{2,}', word.lower()))
 
+from wordfreq import word_frequency
+
+def get_freq_pm(word):
+    """
+    Try AoA dataset first. Fall back to wordfreq for unknown words.
+    wordfreq returns a proportion (0-1), convert to per-million.
+    """
+    if word.lower() in freq_lookup:
+        return freq_lookup[word.lower()]
+    # wordfreq fallback — convert proportion to per-million scale
+    freq = word_frequency(word.lower(), 'en')
+    return freq * 1_000_000  # e.g. 0.000045 → 45 per million
+
 def score_word_bert(word):
     word_lower = word.lower()
     length      = len(word)
@@ -86,7 +99,7 @@ def score_word_bert(word):
     vowel_ratio = vowels / length if length > 0 else 0
     pos = get_pos(word_lower)
     nphon   = nphon_lookup.get(word_lower, 6)    # use real value if available
-    freq_pm = freq_lookup.get(word_lower, 10)
+    freq_pm = get_freq_pm(word_lower)
 
     # get BERT embedding
     embedding = embedder.encode(word)
@@ -139,8 +152,6 @@ def score_word_bert(word):
         'confusable_letters': int(confusable)
     }
 }
-
-
 
 def find_difficult_words_in_text(text, threshold=5.0):
     """
