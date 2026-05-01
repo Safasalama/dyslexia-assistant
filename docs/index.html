@@ -19,7 +19,7 @@
     <header>
         <nav class="navbar navbar-expand-lg ">
             <div class="container">
-                <a class="navbar-brand fs-4 pt-2" href="#Home">Dyslexia</a>
+                <a class="navbar-brand fs-4 pt-2" href="#Home">DECODE</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -240,9 +240,6 @@
                         </div>
 
                         <div class="results-section mt-5 p-4 border rounded" id="resultsSection" style="display: none;">
-                            <h4 class="mb-4 fs-5"><i class="fa-solid fa-square-poll-vertical"
-                                    style="color: var(--accent-color);"></i>Result:
-                            </h4>
                             <div class="result-content p-3 " id="resultContent"></div>
                             <div class="mt-4 d-flex gap-2 align-items-center justify-content-center">
                                 <div class="volume" id="playAudioBtn" title="Play Audio">
@@ -298,38 +295,44 @@
                     <p class="contact-sub text-center">Have a question or feedback? We'd love to hear from you.</p>
                 </div>
 
-                <!-- Contact Card -->
                 <div class="row justify-content-center">
-                    <div class="col-lg-6">
-                        <div class="contact-card p-5">
+                    <div class="col-lg-5">
+                        <div class="contact-card p-4">
 
-                            <div class="mb-4">
-                                <label for="contactName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="contactName" placeholder="Your name">
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label for="contactName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="contactName" placeholder="Your name">
+                                </div>
+                                <div class="col-6">
+                                    <label for="contactEmail" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="contactEmail"
+                                        placeholder="your@email.com">
+                                </div>
                             </div>
 
-                            <div class="mb-4">
-                                <label for="contactEmail" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="contactEmail" placeholder="your@email.com">
-                            </div>
-
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="contactSubject" class="form-label">Subject</label>
                                 <input type="text" class="form-control" id="contactSubject"
                                     placeholder="What is this about?">
                             </div>
 
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="contactMessage" class="form-label">Message</label>
-                                <textarea class="form-control" id="contactMessage" rows="5"
-                                    placeholder="Write your message here..." ></textarea>
+                                <textarea class="form-control" id="contactMessage" rows="4"
+                                    placeholder="Write your message here..."></textarea>
                             </div>
+                            <div class="d-flex justify-content-center">
 
-                            <button class="contact-submit-btn w-100" id="contactSubmit">
-                                <i class="fa-solid fa-paper-plane me-2"></i>Send Message
-                            </button>
-
-
+                                <button class="contact-submit-btn d-flex" id="contactSubmit" type="button">
+                                    <span class="button__text">Send Message</span>
+                                    <span class="button__icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg">
+                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
