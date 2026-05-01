@@ -25,7 +25,8 @@ import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
-from ai.models.bert_scorer import find_difficult_words_in_text
+# NEW
+from ai.models.difficulty_scorer import find_difficult_words_in_text
 
 SYSTEM_PROMPTS = [
     # Prompt 1 — conservative, word-level changes only
@@ -150,7 +151,7 @@ def simplify_text(text, sim_threshold=0.75, n_candidates=5, hard_words= None):
         # Filter only clearly bad candidates
         valid = [
             c for c in candidates
-            if c['similarity'] >= 0.45          # only reject completely off-topic outputs
+            if c['similarity'] >= 0.65          # only reject completely off-topic outputs
             and c.get('flagged') != 'identical_to_input'
             and c['difficulty'] < original_score
         ]
@@ -162,9 +163,9 @@ def simplify_text(text, sim_threshold=0.75, n_candidates=5, hard_words= None):
         # Lower difficulty = better, higher similarity = better
         # We normalize: difficulty is 0-10, similarity is 0-1
         def combined_score(c):
-            difficulty_weight = 0.75
+            difficulty_weight = 0.65
             similarity_weight = 0.25
-            length_weight     = 0.15
+            length_weight     = 0.10
             normalized_diff = c['difficulty'] / 10.0   # lower is better
             normalized_sim  = 1 - c['similarity']       # lower is better (we want high sim)
 

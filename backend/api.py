@@ -1,25 +1,16 @@
+import os, sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from pydantic import BaseModel
-
-import joblib
-import os
-import sys
-import re
 import numpy as np 
+from ai.models.difficulty_scorer import score_word_bert, find_difficult_words_in_text
+from groq import Groq
+from ai.services.simplifier_groq import simplify_text, simplify_sentence_level, simplify_targeted
 
 app = FastAPI(title="Dyslexia Assistant API")
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # points to dyslexia assistant/
-sys.path.append(BASE_DIR)
-model_path = os.path.join(BASE_DIR, "ai", "models", "bert_difficulty_model.pkl")
-
-data = joblib.load(model_path)
-model = data["model"]
-feature_columns = data["feature_count"]
-
-# Add CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))  # ← stop hardcoding keys
 
 @app.get("/")
 def root():
@@ -36,7 +28,6 @@ def root():
 class TextInput(BaseModel):
     text: str
 
-from ai.models.bert_scorer import score_word_bert, find_difficult_words_in_text
 @app.post("/analyze")
 def analyze(input: TextInput):
 
@@ -79,11 +70,6 @@ def analyze(input: TextInput):
         "hard_words": hard_words
     }
     
-
-from groq import Groq
-from ai.sevices.simplifier_groq import simplify_text, simplify_sentence_level, simplify_targeted
-
-groq_client = Groq(api_key=("GROQ_API_KEY"))
 
 @app.post("/simplify")
 def simplify(input: TextInput, mode: str = "targeted"):

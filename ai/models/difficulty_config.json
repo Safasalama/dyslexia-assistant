@@ -1,0 +1,1 @@
+{"transformer_name": "bert-base-uncased", "max_len": 64, "n_linguistic": 11, "linguistic_cols": ["word_length", "syllable_count", "confusable_letters", "vowel_ratio", "has_silent_letter", "has_irregular_grapheme", "consonant_clusters", "Dom_PoS_SUBTLEX", "Nphon", "Freq_pm", "concreteness"], "label": "dyslexia_difficulty", "label_min": 0.0, "label_max": 10.0}
