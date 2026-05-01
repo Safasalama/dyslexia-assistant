@@ -11,7 +11,7 @@ const themes = {
     "--input-bg-color": "#fdf5e8",
     "--btn-hover-color": "#a04835",
     "--success-color": "#28a745",
-     "--footer-overlay":      "rgb(58 46 37 / 51%)",
+    "--footer-overlay": "rgb(58 46 37 / 51%)",
     "img": "./imgs/home-classic-theme.png"
   },
   "Dark reading mode": {
@@ -19,14 +19,14 @@ const themes = {
     "--card-bg-color": "#2A1A20",
     "--text-color": "#e6e6e9",
     "--title-color": "#f2f4f5",
- "--secondary-text": "#a89bb0",
+    "--secondary-text": "#a89bb0",
     "--nav-color": "#1A1015",
     "--nav-text-color": "#f2f4f5",
     "--accent-color": "#b0bec5",
     "--input-bg-color": "#2b1a25",
     "--btn-hover-color": "#493a49",
     "--success-color": "#64b5f6",
-      "--footer-overlay":      "rgba(26, 16, 21, 0.55)",
+    "--footer-overlay": "rgba(26, 16, 21, 0.55)",
 
     "img": "./imgs/home-dark-theme.png"
   },
@@ -36,13 +36,13 @@ const themes = {
     "--text-color": "#394b64",
     "--title-color": "rgb(21, 19, 37)",
     "--nav-color": "#394b64",
-"--secondary-text": "#6b7f99",
+    "--secondary-text": "#6b7f99",
     "--nav-text-color": "#F5EFE6",
     "--accent-color": "#79acd0",
     "--input-bg-color": "#f2faff",
     "--btn-hover-color": "#5a8ba8",
     "--success-color": "#81c784",
-      "--footer-overlay":      "rgba(57, 75, 100, 0.35)",
+    "--footer-overlay": "rgba(57, 75, 100, 0.35)",
 
     "img": "./imgs/home-pastel-theme.png"
   }
@@ -94,7 +94,7 @@ const aboutSection = document.getElementById('About');
 
 window.addEventListener('scroll', () => {
   const aboutBottom = aboutSection.getBoundingClientRect().bottom;
-  
+
   if (aboutBottom > 0) {
     navbar.style.opacity = '1';
     navbar.style.pointerEvents = 'auto';
@@ -109,7 +109,7 @@ navbar.style.transition = 'opacity 0.3s ease';
 
 // ── Font Size Control ──//
 const fontSizes = [16, 18, 20, 22];
-let currentFontIndex = 1; 
+let currentFontIndex = 1;
 
 const savedFontIndex = localStorage.getItem('fontIndex');
 if (savedFontIndex) {
@@ -134,27 +134,27 @@ document.getElementById('fontDecrease').addEventListener('click', () => {
 });
 // ── Hide Font Controls Near Footer ──//
 const fontControls = document.getElementById('fontControls');
-const footer = document.querySelector('footer'); 
+const footer = document.querySelector('footer');
 
 const observerOptions = {
-    root: null,     
-    threshold: 0.1   
+  root: null,
+  threshold: 0.1
 };
 
 const footerObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            fontControls.style.opacity = '0';
-            fontControls.style.pointerEvents = 'none'; 
-        } else {
-            fontControls.style.opacity = '1';
-            fontControls.style.pointerEvents = 'auto';
-        }
-    });
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      fontControls.style.opacity = '0';
+      fontControls.style.pointerEvents = 'none';
+    } else {
+      fontControls.style.opacity = '1';
+      fontControls.style.pointerEvents = 'auto';
+    }
+  });
 }, observerOptions);
 
 if (footer) {
-    footerObserver.observe(footer);
+  footerObserver.observe(footer);
 }
 // ── Step Cards Animation ──//
 const stepCards = document.querySelectorAll('.step-card');
@@ -168,7 +168,7 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.2 });
 
 stepCards.forEach((card, index) => {
-  card.style.transitionDelay = `${index * 0.20}s`; 
+  card.style.transitionDelay = `${index * 0.20}s`;
   observer.observe(card);
 });
 // ── Tips Animation ──//
@@ -283,8 +283,8 @@ function showResult(data, actionType) {
 
   switch (actionType) {
     case "analyze":
-       summary = data.summary;
-       hardWords = data.hard_words;
+      summary = data.summary;
+      hardWords = data.hard_words;
 
       resultHTML = `
         <div class="mb-4">
@@ -300,43 +300,72 @@ function showResult(data, actionType) {
         <div class="mb-3">
           <h3>Words to look out for:</h3>
           <div class="mt-2">
-            ${hardWords.length > 0 ? 
-              hardWords.map(w => `
+            ${hardWords.length > 0 ?
+          hardWords.map(w => `
                 <span class="badge bg-warning text-dark me-1 mb-1" title="${w.reasons.join(', ')}">
                   ${w.word} (${w.difficulty_level})
-                </span>`).join('') : 
-              '<span class="text-muted">No difficult words found!</span>'}
+                </span>`).join('') :
+          '<span class="text-muted">No difficult words found!</span>'}
           </div>
         </div>
       `;
       break;
 
     case "simplify":
-      resultHTML = `
-        <div class="mb-3">
-          <h5 class="border-bottom pb-2"> Simplified Text</h5>
-          <p class="mt-3 p-3 rounded" style="background: var(--input-bg-color); line-height: 1.8; font-size: 1.1rem;">
-            ${data.simplified}
-          </p>
+  summary = data.original_analysis?.summary || { reading_level: "N/A" };
+  highlightedText = data.original || "Original text not available";
+  resultHTML = `
+    <div class="mb-3">
+      <div class="row mb-4 text-center align-items-center">
+        <div class="col-md-5">
+          <div class="p-3 rounded border shadow-sm result-card">
+            <h6 class="small">Before</h6>
+            <div class="h4 mb-0">${summary.reading_level}</div>
+          </div>
         </div>
-      `;
-      break;
+
+        <div class="col-md-2 d-none d-md-block">
+          <div class="process-arrow">
+            <i class="fa-solid fa-circle-arrow-right fa-2x text-success"></i>
+          </div>
+        </div>
+
+        <div class="col-md-5">
+          <div class="p-3 rounded border border-success shadow-sm result-card after-card">
+            <h6 class="text-success small">After</h6>
+            <div class="h4 text-success mb-0">${data.simplified_analysis?.summary?.reading_level || 'N/A'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4 p-4 rounded" style="background: var(--input-bg-color); border-left: 5px solid var(--accent-color)">
+        <h6 class="mb-2 text-uppercase" style="font-size: 0.8rem;">Original Text:</h6>
+        <p class="mb-0" style="line-height: 2; font-size: 1rem;">${highlightedText}</p>
+      </div>
+
+      <h5 class="border-bottom pb-2">Simplified Text</h5>
+      <p class="mt-3 p-3 rounded" style="background: var(--input-bg-color); line-height: 1.8; font-size: 1.1rem;">
+        ${data.simplified || 'No simplified text returned.'}
+      </p>
+    </div>
+  `;
+  break;
 
     case "process":
-      summary = data.original_analysis.summary; 
+      summary = data.original_analysis.summary;
       hardWords = data.original_analysis.hard_words;
-      
+
       highlightedText = data.original;
 
-     if (hardWords && hardWords.length > 0) {
+      if (hardWords && hardWords.length > 0) {
         hardWords.forEach(item => {
-          
-            const wordText = item.word || item; 
 
-            const regex = new RegExp(`\\b${wordText}\\b`, 'gi');
-            highlightedText = highlightedText.replace(regex, `<span class="hard-word-highlight">${wordText}</span>`);
+          const wordText = item.word || item;
+
+          const regex = new RegExp(`\\b${wordText}\\b`, 'gi');
+          highlightedText = highlightedText.replace(regex, `<span class="hard-word-highlight">${wordText}</span>`);
         });
-    }
+      }
       resultHTML = `
         <h5 class="mb-4 border-bottom pb-2"> Processing Results</h5>
         
@@ -378,8 +407,8 @@ const contactCard = document.querySelector('.contact-card');
 if (contactCard) observer.observe(contactCard);
 
 document.getElementById('contactSubmit').addEventListener('click', () => {
-  const name    = document.getElementById('contactName').value.trim();
-  const email   = document.getElementById('contactEmail').value.trim();
+  const name = document.getElementById('contactName').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
   const subject = document.getElementById('contactSubject').value.trim();
   const message = document.getElementById('contactMessage').value.trim();
 
@@ -392,22 +421,22 @@ document.getElementById('contactSubmit').addEventListener('click', () => {
   document.getElementById('contactSuccess').style.display = 'block';
 
   // Clear form
-  document.getElementById('contactName').value    = '';
-  document.getElementById('contactEmail').value   = '';
+  document.getElementById('contactName').value = '';
+  document.getElementById('contactEmail').value = '';
   document.getElementById('contactSubject').value = '';
   document.getElementById('contactMessage').value = '';
 });
 //audio button
-document.getElementById("volumeCheckbox").addEventListener("change", function() {
-    const resultContent = document.getElementById("resultContent");
-    if (this.checked) {
-        const text = resultContent.innerText;
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.85;
-        speechSynthesis.speak(utterance);
-    } else {
-        speechSynthesis.cancel(); 
-    }
+document.getElementById("volumeCheckbox").addEventListener("change", function () {
+  const resultContent = document.getElementById("resultContent");
+  if (this.checked) {
+    const text = resultContent.innerText;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.85;
+    speechSynthesis.speak(utterance);
+  } else {
+    speechSynthesis.cancel();
+  }
 });
 //download button 
 document.getElementById("downloadBtn").addEventListener("click", () => {
