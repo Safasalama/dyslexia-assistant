@@ -2,13 +2,13 @@ const themes = {
   "Classic Bone": {
     "--bg-color": "#F2EDE4",
     "--card-bg-color": "#F7F2EA",
-    "--text-color": "#3A3530",
+    "--text-color": "#595149",
     "--title-color": "#3A2E25",
-    "--secondary-text": "#5A4535",
+    "--secondary-text": "#866c5b",
     "--nav-color": "#3A2E25",
     "--nav-text-color": "#F2EDE4",
     "--accent-color": "#b65243",
-    "--input-bg-color": "#ec715d26",
+    "--input-bg-color": "#fdf5e8",
     "--btn-hover-color": "#a04835",
     "--success-color": "#28a745",
      "--footer-overlay":      "rgb(58 46 37 / 51%)",
@@ -108,7 +108,7 @@ navbar.style.transition = 'opacity 0.3s ease';
 
 
 // ── Font Size Control ──//
-const fontSizes = [14, 16, 18, 20, 22];
+const fontSizes = [16, 18, 20, 22];
 let currentFontIndex = 1; 
 
 const savedFontIndex = localStorage.getItem('fontIndex');
@@ -132,6 +132,30 @@ document.getElementById('fontDecrease').addEventListener('click', () => {
     localStorage.setItem('fontIndex', currentFontIndex);
   }
 });
+// ── Hide Font Controls Near Footer ──//
+const fontControls = document.getElementById('fontControls');
+const footer = document.querySelector('footer'); 
+
+const observerOptions = {
+    root: null,     
+    threshold: 0.1   
+};
+
+const footerObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            fontControls.style.opacity = '0';
+            fontControls.style.pointerEvents = 'none'; 
+        } else {
+            fontControls.style.opacity = '1';
+            fontControls.style.pointerEvents = 'auto';
+        }
+    });
+}, observerOptions);
+
+if (footer) {
+    footerObserver.observe(footer);
+}
 // ── Step Cards Animation ──//
 const stepCards = document.querySelectorAll('.step-card');
 
@@ -240,38 +264,48 @@ async function sendTextToAI(actionType) {
     console.error(error);
   }
 }
+// Result Display Function
 function showResult(data, actionType) {
-  document.getElementById("resultsSection").style.display = "block";
+  const resultsSection = document.getElementById("resultsSection");
+  const resultContent = document.getElementById("resultContent");
+  const extraBtns = document.getElementById("extraBtns");
 
-  // Show additional buttons after successful processing
+  resultsSection.style.display = "block";
+
   if (actionType === "process") {
-    document.getElementById("extraBtns").style.display = "flex";
-}
+    extraBtns.style.display = "flex";
+  } else {
+    extraBtns.style.display = "none";
+  }
 
   let resultHTML = "";
+  let summary, hardWords, highlightedText;
 
   switch (actionType) {
     case "analyze":
+       summary = data.summary;
+       hardWords = data.hard_words;
+
       resultHTML = `
-        <div class="mb-3">
-          <strong>Overall Difficulty Score:</strong> ${data.overall_difficulty}/10
-        </div>
-        <div class="mb-3">
-          <strong>Hardest Words:</strong>
-          <div class="mt-2">
-            ${data.hardest_words.length > 0 ?
-          data.hardest_words.map(word => `<span class="badge bg-warning text-dark me-1">${word}</span>`).join('') :
-          '<span class="text-muted">No difficult words found</span>'}
+        <div class="mb-4">
+          <h5 class="border-bottom pb-2">Text Analysis Summary</h5>
+          <div class="row mt-3">
+            <div class="col"><strong>Reading Level:</strong> <span >${summary.reading_level}</span></div>
+          </div>
+          <div class="row mt-2">
+            <div class="col"><strong>Hardest Word:</strong> <span class="text-danger">${summary.hardest_word || 'N/A'}</span></div>
           </div>
         </div>
+
         <div class="mb-3">
-          <strong>Word-by-Word Analysis:</strong>
+          <h3>Words to look out for:</h3>
           <div class="mt-2">
-            ${Object.entries(data.words).map(([word, score]) =>
-            `<span class="badge bg-secondary me-1 mb-1" title="Score: ${score.difficulty_score}">
-                ${word} (${score.difficulty_score})
-              </span>`
-          ).join('')}
+            ${hardWords.length > 0 ? 
+              hardWords.map(w => `
+                <span class="badge bg-warning text-dark me-1 mb-1" title="${w.reasons.join(', ')}">
+                  ${w.word} (${w.difficulty_level})
+                </span>`).join('') : 
+              '<span class="text-muted">No difficult words found!</span>'}
           </div>
         </div>
       `;
@@ -280,54 +314,89 @@ function showResult(data, actionType) {
     case "simplify":
       resultHTML = `
         <div class="mb-3">
-          <strong>Simplified Text:</strong>
-          <p class="mt-2 p-2 bg-success text-white rounded">${data.simplified}</p>
+          <h5 class="border-bottom pb-2"> Simplified Text</h5>
+          <p class="mt-3 p-3 rounded" style="background: var(--input-bg-color); line-height: 1.8; font-size: 1.1rem;">
+            ${data.simplified}
+          </p>
         </div>
-        ${data.improvement ? `
-        <div class="mb-3">
-          <strong>Readability Improvement:</strong> ${data.improvement}
-        </div>` : ''}
       `;
       break;
 
     case "process":
+      summary = data.original_analysis.summary; 
+      hardWords = data.original_analysis.hard_words;
+      
+      highlightedText = data.original;
+
+     if (hardWords && hardWords.length > 0) {
+        hardWords.forEach(item => {
+          
+            const wordText = item.word || item; 
+
+            const regex = new RegExp(`\\b${wordText}\\b`, 'gi');
+            highlightedText = highlightedText.replace(regex, `<span class="hard-word-highlight">${wordText}</span>`);
+        });
+    }
       resultHTML = `
-    <h5 class="mb-3"> Processing Results</h5>
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <div class="p-3 rounded" style="border: 2px solid var(--border-color)">
-          <h6>Original</h6>
-          <p class="mb-1"><strong>Difficulty:</strong> ${data.original_analysis.overall_difficulty}/10</p>
-          <div class="difficulty-bar mb-2">
-            <div style="width:${data.original_analysis.overall_difficulty * 10}%; height:8px; background:var(--accent-color); border-radius:4px;"></div>
-          </div>
-          <p class="mb-0"><strong>Hard Words:</strong> ${data.original_analysis.hardest_words.map(w => `<span class="badge bg-warning text-dark">${w}</span>`).join(' ') || 'None'}</p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="p-3 rounded" style="border: 2px solid var(--success-color)">
-          <h6>Simplified</h6>
-          <p class="mb-1"><strong>Difficulty:</strong> ${data.simplified_analysis.overall_difficulty}/10</p>
-          <div class="difficulty-bar mb-2">
-            <div style="width:${data.simplified_analysis.overall_difficulty * 10}%; height:8px; background:var(--success-color); border-radius:4px;"></div>
-          </div>
-          <p class="mb-0"><strong>Hard Words:</strong> ${data.simplified_analysis.hardest_words.map(w => `<span class="badge bg-warning text-dark">${w}</span>`).join(' ') || 'None'}</p>
-        </div>
+        <h5 class="mb-4 border-bottom pb-2"> Processing Results</h5>
+        
+        <div class="row mb-4 text-center align-items-center position-relative">
+    <div class="col-md-5">
+      <div class="p-3 rounded border shadow-sm result-card">
+        <h6 class=" small">Before</h6>
+        <div class="h4 mb-0">${summary.reading_level}</div>
       </div>
     </div>
-    <div class="mb-3 p-3 rounded" style="background:var(--input-bg-color)">
-      <strong>Simplified Text:</strong>
-      <p class="mt-2 mb-0" style="line-height:1.9">${data.simplified}</p>
+    
+    <div class="col-md-2 d-none d-md-block">
+      <div class="process-arrow">
+        <i class="fa-solid fa-circle-arrow-right fa-2x text-success"></i>
+      </div>
     </div>
-    <div class="text-center p-2 rounded" style="background:var(--card-bg-color)">
-      <strong>Readability Improvement:</strong> ${data.flesch_improvement}
+
+    <div class="col-md-5">
+      <div class="p-3 rounded border border-success shadow-sm result-card after-card">
+        <h6 class="text-success small">After</h6>
+        <div class="h4 text-success mb-0">${data.simplified_analysis.summary.reading_level}</div>
+      </div>
     </div>
-  `;
+  </div>
+
+        <div class="mb-5 p-4 rounded shadow-inner" style="background: var(--input-bg-color); border-left: 5px solid var(--accent-color)">
+          <h6 class="mb-2 text-uppercase" style="font-size: 0.8rem;">Original Text:</h6>
+          <p class="mb-0" style="line-height: 2; font-size: 1rem;">${highlightedText}</p>
+        </div>
+
+      `;
       break;
   }
 
-  document.getElementById("resultContent").innerHTML = resultHTML;
+  resultContent.innerHTML = resultHTML;
 }
+// ── Contact Form ──
+const contactCard = document.querySelector('.contact-card');
+if (contactCard) observer.observe(contactCard);
+
+document.getElementById('contactSubmit').addEventListener('click', () => {
+  const name    = document.getElementById('contactName').value.trim();
+  const email   = document.getElementById('contactEmail').value.trim();
+  const subject = document.getElementById('contactSubject').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+
+  if (!name || !email || !subject || !message) {
+    alert('Please fill in all fields.');
+    return;
+  }
+
+  // ✅ هنا تقدر تضيف الـ API call بتاعتك
+  document.getElementById('contactSuccess').style.display = 'block';
+
+  // Clear form
+  document.getElementById('contactName').value    = '';
+  document.getElementById('contactEmail').value   = '';
+  document.getElementById('contactSubject').value = '';
+  document.getElementById('contactMessage').value = '';
+});
 //audio button
 document.getElementById("volumeCheckbox").addEventListener("change", function() {
     const resultContent = document.getElementById("resultContent");
